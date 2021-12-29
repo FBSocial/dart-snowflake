@@ -9,5 +9,7 @@ class _config implements config {
   final int machine;
   final int dataCenter;
   final int epoch;
-  _config._({this.machine, this.dataCenter, this.epoch});
+
+  _config._(
+      {required this.machine, required this.dataCenter, required this.epoch});
 }

@@ -15,10 +15,12 @@ int dataCenter(int id) {
 }
 
 abstract class idWorker {
-  factory idWorker(_config cfg) => _idWorker._(
-      machine: cfg.machine & 0x1f,
-      dataCenter: cfg.dataCenter & 0x1f,
-      epoch: cfg.epoch);
+  factory idWorker(config cfg) {
+    return _idWorker._(
+        machine: (cfg as _config).machine & 0x1f,
+        dataCenter: cfg.dataCenter & 0x1f,
+        epoch: cfg.epoch);
+  }
 
   external int generate();
 }
@@ -30,42 +32,44 @@ class _idWorker implements idWorker {
   int sequence;
   int lastTimestamp;
 
-  _idWorker._({this.machine, this.dataCenter, this.epoch})
+  _idWorker._(
+      {required this.machine, required this.dataCenter, required this.epoch})
       : sequence = 0,
         lastTimestamp = -1;
 
+  @override
   int generate() {
-    var timeGen = (int epoch) {
-      return DateTime.now().millisecondsSinceEpoch - epoch;
+    var timeGen = (int? epoch) {
+      return DateTime.now().millisecondsSinceEpoch - epoch!;
     };
 
-    var t = timeGen(this.epoch);
-    if (t != this.lastTimestamp) {
-      this.sequence = 0;
-      this.lastTimestamp = t;
-      var id = this.lastTimestamp << 22;
-      id |= (this.dataCenter << 17);
-      id |= (this.machine << 12);
-      id |= this.sequence;
+    var t = timeGen(epoch);
+    if (t != lastTimestamp) {
+      sequence = 0;
+      lastTimestamp = t;
+      var id = lastTimestamp << 22;
+      id |= (dataCenter << 17);
+      id |= (machine << 12);
+      id |= sequence;
 
       return id;
     }
 
-    this.sequence = (this.sequence + 1) & 0xfff;
-    if (this.sequence == 0) {
+    sequence = (sequence + 1) & 0xfff;
+    if (sequence == 0) {
       while (true) {
-        t = timeGen(this.epoch);
-        if (t > this.lastTimestamp) {
+        t = timeGen(epoch);
+        if (t > lastTimestamp) {
           break;
         }
       }
     }
 
-    this.lastTimestamp = t;
-    var id = this.lastTimestamp << 22;
-    id |= (this.dataCenter << 17);
-    id |= (this.machine << 12);
-    id |= this.sequence;
+    lastTimestamp = t;
+    var id = lastTimestamp << 22;
+    id |= (dataCenter << 17);
+    id |= (machine << 12);
+    id |= sequence;
 
     return id;
   }
