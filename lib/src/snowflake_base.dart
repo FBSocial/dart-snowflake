@@ -22,7 +22,7 @@ abstract class idWorker {
         epoch: cfg.epoch);
   }
 
-  external int generate();
+  int generate();
 }
 
 class _idWorker implements idWorker {
